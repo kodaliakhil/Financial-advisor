@@ -45,3 +45,15 @@ git commit -m "first commit"
 git branch -M main
 git remote add origin https://github.com/kodaliakhil/Financial-advisor.git
 git push -u origin main
+
+
+
+
+# Tools Used
+- Next.js
+- Shadcn UI
+- Clerk authentication
+- Supabase (Database)
+- Prisma (ORM)
+- Arcjet (App Security)
+- Inngest (Cron Jobs)
