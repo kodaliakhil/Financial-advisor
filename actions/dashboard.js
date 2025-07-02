@@ -22,16 +22,7 @@ import serializeTransaction from "./utils/serializeTransaction";
 
 export async function createAccount(data) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-    if (!user) {
-      throw new Error("User not found");
-    }
+    const user = await authenticateUser();
 
     // Convert balance to float before saving
     const balanceFloat = parseFloat(data.balance);
@@ -71,16 +62,7 @@ export async function createAccount(data) {
 
 export async function getUserAccounts() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-    if (!user) {
-      throw new Error("User not found");
-    }
+    const user = await authenticateUser();
     const accounts = await db.account.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
