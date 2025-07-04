@@ -52,3 +52,49 @@ export async function getAccountWithTransactions(accountId) {
     throw new Error(error.message);
   }
 }
+
+export async function bulkDeleteTransactions(transactionIds) {
+  try {
+    const user = await authenticateUser();
+    const transactions = await db.transaction.findMany({
+      where: { id: { in: transactionIds }, userId: user.id },
+    });
+    const accountBalanceChanges = transactions.reduce((acc, transaction) => {
+      const change =
+        transaction.type === "EXPENSE"
+          ? transaction.amount
+          : -transaction.amount;
+      acc[transaction.accountId] = parseFloat(acc[transaction.accountId] || 0) + parseFloat(change);
+      return acc;
+    }, {});
+    // Delete transactions and update account balances
+    await db.$transaction(async (tx) => {
+      //Delete Transactions
+      await tx.transaction.deleteMany({
+        where: {
+          id: { in: transactionIds },
+          userId: user.id,
+        },
+      });
+
+      for (const [accountId, balanceChange] of Object.entries(
+        accountBalanceChanges
+      )) {
+        await tx.account.update({
+          where: { id: accountId },
+          data: {
+            balance: {
+              increment: balanceChange,
+            },
+          },
+        });
+      }
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/account/[id]");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}

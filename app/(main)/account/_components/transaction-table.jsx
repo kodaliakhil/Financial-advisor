@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -44,6 +44,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import useFetch from "@/hooks/use-fetch";
+import { bulkDeleteTransactions } from "@/actions/accounts";
+import { toast } from "sonner";
+import { BarLoader } from "react-spinners";
 
 const RECURRING_INTERVALS = {
   DAILY: "Daily",
@@ -63,6 +67,21 @@ const TransactionTable = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [recurringFilter, setRecurringFilter] = useState("");
+  const {
+    loading: deleteLoading,
+    fn: deleteFn,
+    data: deleted,
+  } = useFetch(bulkDeleteTransactions);
+  const handleBulkDelete = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedIds.length} transactions?`
+      )
+    ) {
+      return;
+    }
+    deleteFn(selectedIds);
+  };
   const filteredAndSortedTransactions = useMemo(() => {
     let result = [...transactions];
     // Apply Search filter
@@ -132,15 +151,23 @@ const TransactionTable = ({ transactions }) => {
         : filteredAndSortedTransactions.map((t) => t.id)
     );
   };
-  const handleBulkDelete = () => {};
   const handleClearFilters = () => {
     setSearchTerm("");
     setTypeFilter("");
     setRecurringFilter("");
     setSelectedIds([]);
   };
+
+  useEffect(() => {
+    if (deleted && !deleteLoading) {
+      toast.error("Transactions deleted successfully!");
+    }
+  }, [deleted, deleteLoading]);
   return (
     <div className="space-y-4">
+      {deleteLoading && (
+        <BarLoader className="mt-4" width={"100%"} color="#9333ea" />
+      )}
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -373,7 +400,7 @@ const TransactionTable = ({ transactions }) => {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className={"text-destructive"}
-                          //   onClick={() => deleteFn([transaction.id])}
+                          onClick={() => deleteFn([transaction.id])}
                         >
                           Delete
                         </DropdownMenuItem>
