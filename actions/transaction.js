@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "@/lib/prisma";
 import authenticateUser from "./utils/authenticateUser";
 import { revalidatePath } from "next/cache";
