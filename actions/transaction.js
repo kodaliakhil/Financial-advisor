@@ -3,6 +3,8 @@
 import { db } from "@/lib/prisma";
 import authenticateUser from "./utils/authenticateUser";
 import { revalidatePath } from "next/cache";
+import { request } from "@arcjet/next";
+import aj from "@/lib/arcjet/arcjet";
 
 const serializeAmount = (obj) => ({
   ...obj,
@@ -13,6 +15,24 @@ export async function createTransaction(data) {
   try {
     const user = await authenticateUser();
 
+    //Get request data for ArcJet
+    const req = await request();
+    //Check rate Limit
+    const decision = await aj.protect(req, { userId: user.id, requested: 1 });
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        const { remaining, reset } = decision.reason;
+        console.log({
+          code: "RATE_LIMIT_EXCEEDED",
+          details: {
+            remaining,
+            resetInSeconds: reset,
+          },
+        });
+        throw new Error("Too many requests, please try again later.");
+      }
+      throw new Error("Request denied.");
+    }
     const account = await db.account.findUnique({
       where: { id: data.accountId, userId: user.id },
     });
