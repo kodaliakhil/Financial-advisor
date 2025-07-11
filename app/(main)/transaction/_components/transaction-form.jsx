@@ -27,6 +27,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import ReceiptScanner from "./receipt-scanner";
 
 const AddTransactionForm = ({ accounts, categories }) => {
   const router = useRouter();
@@ -72,9 +73,38 @@ const AddTransactionForm = ({ accounts, categories }) => {
     }
   }, [transactionResult, transactionLoading]);
   const filteredCategories = categories.filter((cat) => cat.type === type);
+  const handleScanComplete = (scannedData) => {
+    console.log(scannedData);
+    if (scannedData) {
+      if (scannedData.amount) {
+        setValue("amount", scannedData.amount);
+      } else {
+        toast.error("Unable to extract amount from receipt");
+      }
+      if (scannedData.description) {
+        setValue("description", scannedData.description);
+      } else {
+        toast.error("Unable to extract description from receipt");
+      }
+      if (scannedData.date) {
+        setValue("date", new Date(scannedData.date));
+      } else {
+        toast.error("Unable to extract date from receipt");
+      }
+      if (scannedData.category) {
+        setValue("category", scannedData.category);
+      } else {
+        toast.error("Unable to extract category from receipt");
+      }
+      // if(scannedData.merchantName){
+      //   setValue("merchantName", scannedData.merchantName);
+      // }
+    }
+  };
   return (
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       {/* AI Reciept scanner */}
+      <ReceiptScanner onScanComplete={handleScanComplete} />
 
       <div className="space-y-2">
         <label className="text-sm font-medium">Type</label>
