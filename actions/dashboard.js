@@ -80,3 +80,18 @@ export async function getUserAccounts() {
     throw new Error(error.message);
   }
 }
+
+export async function getDashboardData() {
+  try {
+    const user = await authenticateUser();
+
+    //Get all user Transactions
+    const transactions = await db.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+    });
+    return transactions.map(serializeTransaction);
+  } catch (error) {
+    console.log(error);
+  }
+}
