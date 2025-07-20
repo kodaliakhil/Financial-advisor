@@ -14,6 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
+      <link rel="icon" href="/icon.png" />
       <html lang="en">
         <body className={`${inter.className}`} suppressHydrationWarning>
           {/* Header */}
