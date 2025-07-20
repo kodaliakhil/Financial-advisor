@@ -19,7 +19,14 @@ import {
 import { format } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 const COLORS = [
   "#FF6B6B",
@@ -72,7 +79,6 @@ const DashboardOverview = ({ transactions, accounts }) => {
       value: amount,
     })
   );
-  console.log(pieChartData);
   return (
     <div className="grid gap-4 md:grid-cols-2 ">
       <Card>
@@ -183,7 +189,7 @@ const DashboardOverview = ({ transactions, accounts }) => {
                       borderRadius: "var(--radius)",
                     }}
                   />
-                  <Legend/>
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
